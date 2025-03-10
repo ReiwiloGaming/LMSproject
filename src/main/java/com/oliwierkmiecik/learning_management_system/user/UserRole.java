@@ -1,6 +1,6 @@
 package com.oliwierkmiecik.learning_management_system.user;
 
-public enum Role {
+public enum UserRole {
     STUDENT,
     TEACHER
 }
