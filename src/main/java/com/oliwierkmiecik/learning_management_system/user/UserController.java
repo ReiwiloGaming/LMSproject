@@ -22,7 +22,7 @@ public class UserController {
 
     @GetMapping("users")
     public ResponseEntity<List<UserReadDTO>> getAllUsers() {
-        return ResponseEntity.ok(userService.userListToReadDTOList(userService.findAllUsers()));
+        return ResponseEntity.ok(userMapper.entityListToReadDTOList(userService.findAllUsers()));
     }
 
     @GetMapping("users/{id}")
@@ -32,12 +32,14 @@ public class UserController {
 
     @PostMapping("users")
     public ResponseEntity<UserReadDTO> createUser(@RequestBody UserCreateDTO userCreateDTO) {
-        UserReadDTO userReadDTO = userMapper.userToUserReadDTO(userService.saveUser(userCreateDTO));
+        User newUser = userService.saveUser(userCreateDTO);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(userReadDTO.getId())
+                .buildAndExpand(newUser.getId())
                 .toUri();
+
+        UserReadDTO userReadDTO = userMapper.userToUserReadDTO(newUser);
 
         return ResponseEntity.created(location).body(userReadDTO);
     }

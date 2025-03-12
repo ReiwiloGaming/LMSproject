@@ -5,10 +5,16 @@ import com.oliwierkmiecik.learning_management_system.user.dto.UserReadDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
-public interface UserMapper {
-    @Mapping(source = "name", target = "username") //Ta adnotacja zamieni pole o nazwie name z encji User na pole o nazwie username w DTO
-    UserReadDTO userToUserReadDTO(User user);
+import java.util.List;
 
-    User userCreateDTOToUser(UserCreateDTO userCreateDTO);
+@Mapper(componentModel = "spring")
+public abstract class UserMapper {
+    @Mapping(source = "name", target = "username") //Ta adnotacja zamieni pole o nazwie name z encji User na pole o nazwie username w DTO
+    protected abstract UserReadDTO userToUserReadDTO(User user);
+
+    protected abstract User userCreateDTOToUser(UserCreateDTO userCreateDTO);
+
+    protected List<UserReadDTO> entityListToReadDTOList(List<User> userList) {
+        return userList.stream().map(this::userToUserReadDTO).toList();
+    }
 }

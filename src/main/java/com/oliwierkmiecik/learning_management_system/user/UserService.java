@@ -50,14 +50,6 @@ public class UserService {
         userRepository.delete(findUserById(id));
     }
 
-    public List<UserReadDTO> userListToReadDTOList(List<User> userList) {
-        List<UserReadDTO> userReadDTOList = new ArrayList<>();
-        for (User user : userList) {
-            userReadDTOList.add(userMapper.userToUserReadDTO(user));
-        }
-        return userReadDTOList;
-    }
-
 
     private void checkIfAllFieldsPresent(UserCreateDTO userCreateDTO) {
         if (userCreateDTO.getName() == null || userCreateDTO.getEmail() == null || userCreateDTO.getRole() == null) {
