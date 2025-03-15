@@ -3,14 +3,13 @@ package com.oliwierkmiecik.learning_management_system.course.quiz;
 import com.oliwierkmiecik.learning_management_system.course.quiz.dto.QuizCreateDTO;
 import com.oliwierkmiecik.learning_management_system.course.quiz.dto.QuizReadDTO;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
 
-@Controller
+@RestController
 public class QuizController {
     private final QuizService quizService;
     private final QuizMapper quizMapper;

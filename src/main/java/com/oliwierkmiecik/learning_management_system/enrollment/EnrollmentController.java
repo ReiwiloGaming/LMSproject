@@ -3,14 +3,13 @@ package com.oliwierkmiecik.learning_management_system.enrollment;
 import com.oliwierkmiecik.learning_management_system.enrollment.dto.EnrollmentCreateDTO;
 import com.oliwierkmiecik.learning_management_system.enrollment.dto.EnrollmentReadDTO;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
 
-@Controller
+@RestController
 public class EnrollmentController {
     private final EnrollmentService enrollmentService;
     private final EnrollmentMapper enrollmentMapper;

@@ -3,14 +3,13 @@ package com.oliwierkmiecik.learning_management_system.course;
 import com.oliwierkmiecik.learning_management_system.course.dto.CourseCreateDTO;
 import com.oliwierkmiecik.learning_management_system.course.dto.CourseReadDTO;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
 
-@Controller
+@RestController
 public class CourseController {
     private final CourseService courseService;
     private final CourseMapper courseMapper;

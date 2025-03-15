@@ -3,14 +3,13 @@ package com.oliwierkmiecik.learning_management_system.user;
 import com.oliwierkmiecik.learning_management_system.user.dto.UserCreateDTO;
 import com.oliwierkmiecik.learning_management_system.user.dto.UserReadDTO;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
 
-@Controller
+@RestController
 public class UserController {
     private final UserService userService;
     private final UserMapper userMapper;

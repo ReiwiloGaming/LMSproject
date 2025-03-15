@@ -26,6 +26,10 @@ public class LessonService {
                 .orElseThrow(() -> new NotFoundException("Lesson not found for id: " + id));
     }
 
+    public List<Lesson> findLessonsByCourseId(Integer courseId) {
+        return lessonRepository.findByCourseId(courseId);
+    }
+
     public Lesson saveLesson(LessonCreateDTO createDTO) {
         Lesson newLesson = lessonMapper.lessonCreateDTOToLesson(createDTO);
         return lessonRepository.save(newLesson);
