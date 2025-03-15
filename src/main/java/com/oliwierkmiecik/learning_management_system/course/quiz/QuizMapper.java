@@ -21,7 +21,13 @@ public abstract class QuizMapper {
     protected abstract Quiz quizCreateDTOToQuiz(QuizCreateDTO createDTO);
 
     @Mapping(source = "questions", target = "questionTexts")
-    protected abstract QuizReadDTO quizToQuizReadDTO(Quiz quiz);
+    public abstract QuizReadDTO quizToQuizReadDTO(Quiz quiz);
+
+    public List<QuizReadDTO> quizListToQuizReadDTOList(List<Quiz> quizList) {
+        return quizList.stream()
+                .map(this::quizToQuizReadDTO)
+                .toList();
+    }
 
     protected Course mapCourse(Integer courseId) {
         if (courseId== null) return null;
@@ -31,11 +37,5 @@ public abstract class QuizMapper {
 
     protected String mapQuizQuestionToString(QuizQuestion quizQuestion) {
         return quizQuestion.getQuestionText();
-    }
-
-    protected List<QuizReadDTO> QuizListToQuizReadDTOList(List<Quiz> quizList) {
-        return quizList.stream()
-                .map(this::quizToQuizReadDTO)
-                .toList();
     }
 }

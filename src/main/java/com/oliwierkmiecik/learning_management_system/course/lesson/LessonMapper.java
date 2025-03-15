@@ -19,17 +19,17 @@ public abstract class LessonMapper {
     @Mapping(source = "courseId", target = "course")
     protected abstract Lesson lessonCreateDTOToLesson(LessonCreateDTO lessonCreateDTO);
 
-    protected abstract LessonReadDTO lessonToLessonReadDTO(Lesson lesson);
+    public abstract LessonReadDTO lessonToLessonReadDTO(Lesson lesson);
+
+    public List<LessonReadDTO> lessonListToLessonReadDTOList(List<Lesson> lessonList) {
+        return lessonList.stream()
+                .map(this::lessonToLessonReadDTO)
+                .toList();
+    }
 
     protected Course mapCourse(Integer courseId) {
         if (courseId== null) return null;
         return courseRepository.findById(courseId)
                 .orElseThrow(() -> new NotFoundException("Course not found for id: " + courseId));
-    }
-
-    protected List<LessonReadDTO> LessonListToLessonReadDTOList(List<Lesson> lessonList) {
-        return lessonList.stream()
-                .map(this::lessonToLessonReadDTO)
-                .toList();
     }
 }
