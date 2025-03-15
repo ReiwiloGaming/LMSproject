@@ -41,7 +41,7 @@ public class CourseController {
         Course newCourse = courseService.saveCourse(createDTO);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("{/{id}")
+                .path("/{id}")
                 .buildAndExpand(newCourse.getId())
                 .toUri();
 
