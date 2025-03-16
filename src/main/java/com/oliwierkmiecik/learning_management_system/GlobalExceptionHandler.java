@@ -16,6 +16,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NullsForbiddenException.class)
     public ResponseEntity<String> handleNullsForbiddenException(NullsForbiddenException e) {
-        return ResponseEntity.status(400).body(e.getMessage());
+        return ResponseEntity.status(403).body(e.getMessage());
     }
 }
