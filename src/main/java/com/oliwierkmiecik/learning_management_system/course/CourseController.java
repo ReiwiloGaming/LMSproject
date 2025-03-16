@@ -10,6 +10,14 @@ import com.oliwierkmiecik.learning_management_system.course.quiz.Quiz;
 import com.oliwierkmiecik.learning_management_system.course.quiz.QuizMapper;
 import com.oliwierkmiecik.learning_management_system.course.quiz.dto.QuizCreateDTO;
 import com.oliwierkmiecik.learning_management_system.course.quiz.dto.QuizReadDTO;
+import com.oliwierkmiecik.learning_management_system.course.quiz.question.QuizQuestion;
+import com.oliwierkmiecik.learning_management_system.course.quiz.question.QuizQuestionMapper;
+import com.oliwierkmiecik.learning_management_system.course.quiz.question.answer.QuizQuestionAnswer;
+import com.oliwierkmiecik.learning_management_system.course.quiz.question.answer.QuizQuestionAnswerMapper;
+import com.oliwierkmiecik.learning_management_system.course.quiz.question.answer.dto.QuizQuestionAnswerCreateDTO;
+import com.oliwierkmiecik.learning_management_system.course.quiz.question.answer.dto.QuizQuestionAnswerReadDTO;
+import com.oliwierkmiecik.learning_management_system.course.quiz.question.dto.QuizQuestionCreateDTO;
+import com.oliwierkmiecik.learning_management_system.course.quiz.question.dto.QuizQuestionReadDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -23,12 +31,16 @@ public class CourseController {
     private final CourseMapper courseMapper;
     private final LessonMapper lessonMapper;
     private final QuizMapper quizMapper;
+    private final QuizQuestionMapper quizQuestionMapper;
+    private final QuizQuestionAnswerMapper quizQuestionAnswerMapper;
 
-    public CourseController(CourseService courseService, CourseMapper courseMapper, LessonMapper lessonMapper, QuizMapper quizMapper) {
+    public CourseController(CourseService courseService, CourseMapper courseMapper, LessonMapper lessonMapper, QuizMapper quizMapper, QuizQuestionMapper quizQuestionMapper, QuizQuestionAnswerMapper quizQuestionAnswerMapper) {
         this.courseService = courseService;
         this.courseMapper = courseMapper;
         this.lessonMapper = lessonMapper;
         this.quizMapper = quizMapper;
+        this.quizQuestionMapper = quizQuestionMapper;
+        this.quizQuestionAnswerMapper = quizQuestionAnswerMapper;
     }
 
     //-----------------------------------------------------------------------------------------------------------------
@@ -199,4 +211,100 @@ public class CourseController {
 
     //-----------------------------------------------------------------------------------------------------------------
     //                                        CONTROLLING QUIZ QUESTIONS
+
+    @GetMapping("courses/quizes/questions")
+    public ResponseEntity<List<QuizQuestionReadDTO>> getAllQuestions() {
+        List<QuizQuestion> quizQuestions = courseService.findAllQuizQuestions();
+        List<QuizQuestionReadDTO> quizQuestionReadDTOS = quizQuestionMapper.EntityListToReadDTOList(quizQuestions);
+        return ResponseEntity.ok(quizQuestionReadDTOS);
+    }
+
+    @GetMapping("courses/quizes/questions/{id}")
+    public ResponseEntity<QuizQuestionReadDTO> getQuestionById(@PathVariable Integer id) {
+        QuizQuestion questionById = courseService.findQuizQuestionById(id);
+        QuizQuestionReadDTO quizQuestionReadDTO = quizQuestionMapper.QuizQuestionToQuizQuestionReadDTO(questionById);
+        return ResponseEntity.ok(quizQuestionReadDTO);
+    }
+
+    @PostMapping("courses/quizes/questions")
+    public ResponseEntity<QuizQuestionReadDTO> createQuestion(@RequestBody QuizQuestionCreateDTO createDTO) {
+        QuizQuestion newQuestion = courseService.saveQuizQuestion(createDTO);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(newQuestion.getId())
+                .toUri();
+
+        QuizQuestionReadDTO newQuestionReadDTO = quizQuestionMapper.QuizQuestionToQuizQuestionReadDTO(newQuestion);
+
+        return ResponseEntity.created(location).body(newQuestionReadDTO);
+    }
+
+    @PutMapping("courses/quizes/questions/{id}")
+    public ResponseEntity<QuizQuestionReadDTO> updateQuestion(@PathVariable Integer id, @RequestBody QuizQuestionCreateDTO updates) {
+        QuizQuestion updatedQuestion = courseService.updateQuizQuestion(id, updates, true);
+        QuizQuestionReadDTO updatedQuestionReadDTO = quizQuestionMapper.QuizQuestionToQuizQuestionReadDTO(updatedQuestion);
+
+        return ResponseEntity.ok(updatedQuestionReadDTO);
+    }
+
+    @PatchMapping("courses/quizes/questions/{id}")
+    public ResponseEntity<QuizQuestionReadDTO> partiallyUpdateQuestion(@PathVariable Integer id, @RequestBody QuizQuestionCreateDTO updates) {
+        QuizQuestion updatedQuestion = courseService.updateQuizQuestion(id, updates, false);
+        QuizQuestionReadDTO updatedQuestionReadDTO = quizQuestionMapper.QuizQuestionToQuizQuestionReadDTO(updatedQuestion);
+
+        return ResponseEntity.ok(updatedQuestionReadDTO);
+    }
+
+    @DeleteMapping("courses/quizes/questions/{id}")
+    public ResponseEntity<Void> deleteQuestion(@PathVariable Integer id) {
+        courseService.deleteQuizQuestion(id);
+        return ResponseEntity.noContent().build();
+    }
+    //-----------------------------------------------------------------------------------------------------------------
+    //                                      CONTROLLING QUIZ QUESTION ANSWERS
+
+    @GetMapping("quizquestionanswers")
+    public ResponseEntity<List<QuizQuestionAnswerReadDTO>> getAllAnswers() {
+        return ResponseEntity.ok(quizQuestionAnswerMapper.entityListToReadDTOList(courseService.findAllQuizQuestionAnswers()));
+    }
+
+    @GetMapping("quizquestionanswers/{id}")
+    public ResponseEntity<QuizQuestionAnswerReadDTO> getAnswerById(@PathVariable Integer id) {
+        return ResponseEntity.ok(quizQuestionAnswerMapper.QuizQuestionAnswerToQuizQuestionAnswerReadDTO(courseService.findQuizQuestionAnswerById(id)));
+    }
+
+    @PostMapping("quizquestionanswers")
+    public ResponseEntity<QuizQuestionAnswerReadDTO> createAnswer(@RequestBody QuizQuestionAnswerCreateDTO createDTO) {
+        QuizQuestionAnswer newAnswer = courseService.saveQuizQuestionAnswer(createDTO);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(newAnswer.getId())
+                .toUri();
+
+        QuizQuestionAnswerReadDTO answerReadDTO = quizQuestionAnswerMapper.QuizQuestionAnswerToQuizQuestionAnswerReadDTO(newAnswer);
+
+        return ResponseEntity.created(location).body(answerReadDTO);
+    }
+
+    @PutMapping("quizquestionanswers/{id}")
+    public ResponseEntity<QuizQuestionAnswerReadDTO> updateAnswer(@PathVariable Integer id, @RequestBody QuizQuestionAnswerCreateDTO updates) {
+        QuizQuestionAnswer updatedAnswer = courseService.updateQuizQuestionAnswer(id, updates, true);
+        QuizQuestionAnswerReadDTO answerReadDTO = quizQuestionAnswerMapper.QuizQuestionAnswerToQuizQuestionAnswerReadDTO(updatedAnswer);
+        return ResponseEntity.ok(answerReadDTO);
+    }
+
+    @PatchMapping("quizquestionanswers/{id}")
+    public ResponseEntity<QuizQuestionAnswerReadDTO> partiallyUpdateAnswer(@PathVariable Integer id, @RequestBody QuizQuestionAnswerCreateDTO updates) {
+        QuizQuestionAnswer updatedAnswer = courseService.updateQuizQuestionAnswer(id, updates, false);
+        QuizQuestionAnswerReadDTO answerReadDTO = quizQuestionAnswerMapper.QuizQuestionAnswerToQuizQuestionAnswerReadDTO(updatedAnswer);
+        return ResponseEntity.ok(answerReadDTO);
+    }
+
+    @DeleteMapping("quizquestionanswers/{id}")
+    public ResponseEntity<Void> deleteAnswer(@PathVariable Integer id) {
+        courseService.deleteQuizQuestionAnswer(id);
+        return ResponseEntity.noContent().build();
+    }
 }

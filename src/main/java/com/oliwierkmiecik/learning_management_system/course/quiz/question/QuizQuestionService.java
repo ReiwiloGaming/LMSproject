@@ -1,5 +1,8 @@
 package com.oliwierkmiecik.learning_management_system.course.quiz.question;
 
+import com.oliwierkmiecik.learning_management_system.course.quiz.question.answer.QuizQuestionAnswer;
+import com.oliwierkmiecik.learning_management_system.course.quiz.question.answer.QuizQuestionAnswerService;
+import com.oliwierkmiecik.learning_management_system.course.quiz.question.answer.dto.QuizQuestionAnswerCreateDTO;
 import com.oliwierkmiecik.learning_management_system.course.quiz.question.dto.QuizQuestionCreateDTO;
 import com.oliwierkmiecik.learning_management_system.exceptions.NotFoundException;
 import com.oliwierkmiecik.learning_management_system.exceptions.NullsForbiddenException;
@@ -11,10 +14,12 @@ import java.util.List;
 public class QuizQuestionService {
     private final QuizQuestionRepository quizQuestionRepository;
     private final QuizQuestionMapper quizQuestionMapper;
+    private final QuizQuestionAnswerService quizQuestionAnswerService;
 
-    public QuizQuestionService(QuizQuestionRepository quizQuestionRepository, QuizQuestionMapper quizQuestionMapper) {
+    public QuizQuestionService(QuizQuestionRepository quizQuestionRepository, QuizQuestionMapper quizQuestionMapper, QuizQuestionAnswerService quizQuestionAnswerService) {
         this.quizQuestionRepository = quizQuestionRepository;
         this.quizQuestionMapper = quizQuestionMapper;
+        this.quizQuestionAnswerService = quizQuestionAnswerService;
     }
 
     // Kolejne zadanie: stworzyć serwis i kontroler dla QuizQuestion
@@ -56,5 +61,27 @@ public class QuizQuestionService {
         if (quizQuestion.getQuestionText() == null || quizQuestion.getQuiz() == null || quizQuestion.getCorrectAnswer() == null) {
             throw new NullsForbiddenException("Nulls are forbidden");
         }
+    }
+    //-----------------------------------------------------------------------------------------------------------------
+    //                                               QUIZ QUESTION ANSWERS
+
+    public List<QuizQuestionAnswer> findAllAnswers() {
+        return quizQuestionAnswerService.findAllAnswers();
+    }
+
+    public QuizQuestionAnswer findAnswerById(Integer id) {
+        return quizQuestionAnswerService.findAnswerById(id);
+    }
+
+    public QuizQuestionAnswer saveAnswer(QuizQuestionAnswerCreateDTO createDTO) {
+        return quizQuestionAnswerService.saveAnswer(createDTO);
+    }
+
+    public QuizQuestionAnswer updateAnswer(Integer id, QuizQuestionAnswerCreateDTO updates, boolean ifAllFieldsRequired) {
+        return quizQuestionAnswerService.updateAnswer(id, updates, ifAllFieldsRequired);
+    }
+
+    public void deleteAnswer(Integer id) {
+        quizQuestionAnswerService.deleteAnswer(id);
     }
 }

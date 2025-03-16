@@ -7,6 +7,10 @@ import com.oliwierkmiecik.learning_management_system.course.lesson.dto.LessonCre
 import com.oliwierkmiecik.learning_management_system.course.quiz.Quiz;
 import com.oliwierkmiecik.learning_management_system.course.quiz.QuizService;
 import com.oliwierkmiecik.learning_management_system.course.quiz.dto.QuizCreateDTO;
+import com.oliwierkmiecik.learning_management_system.course.quiz.question.QuizQuestion;
+import com.oliwierkmiecik.learning_management_system.course.quiz.question.answer.QuizQuestionAnswer;
+import com.oliwierkmiecik.learning_management_system.course.quiz.question.answer.dto.QuizQuestionAnswerCreateDTO;
+import com.oliwierkmiecik.learning_management_system.course.quiz.question.dto.QuizQuestionCreateDTO;
 import com.oliwierkmiecik.learning_management_system.exceptions.NotFoundException;
 import com.oliwierkmiecik.learning_management_system.exceptions.NullsForbiddenException;
 import org.springframework.stereotype.Service;
@@ -110,5 +114,50 @@ public class CourseService {
 
     public void deleteQuiz(Integer id) {
         quizService.deleteQuiz(id);
+    }
+    //-----------------------------------------------------------------------------------------------------------------
+    //                                               QUIZ QUESTIONS
+
+    public List<QuizQuestion> findAllQuizQuestions() {
+        return quizService.findAllQuestions();
+    }
+
+    public QuizQuestion findQuizQuestionById(Integer id) {
+        return quizService.findQuestionById(id);
+    }
+
+    public QuizQuestion saveQuizQuestion(QuizQuestionCreateDTO createDTO) {
+        return quizService.saveQuestion(createDTO);
+    }
+
+    public QuizQuestion updateQuizQuestion(Integer id, QuizQuestionCreateDTO updates, boolean ifAllFieldsRequired) {
+        return quizService.updateQuestion(id, updates, ifAllFieldsRequired);
+    }
+
+    public void deleteQuizQuestion(Integer id) {
+        quizService.deleteQuestion(id);
+    }
+
+    //-----------------------------------------------------------------------------------------------------------------
+    //                                               QUIZ QUESTION ANSWERS
+
+    public List<QuizQuestionAnswer> findAllQuizQuestionAnswers() {
+        return quizService.findAllQuestionAnswers();
+    }
+
+    public QuizQuestionAnswer findQuizQuestionAnswerById(Integer id) {
+        return quizService.findQuestionAnswerById(id);
+    }
+
+    public QuizQuestionAnswer saveQuizQuestionAnswer(QuizQuestionAnswerCreateDTO createDTO) {
+        return quizService.saveQuestionAnswer(createDTO);
+    }
+
+    public QuizQuestionAnswer updateQuizQuestionAnswer(Integer id, QuizQuestionAnswerCreateDTO updates, boolean ifAllFieldsRequired) {
+        return quizService.updateQuestionAnswer(id, updates, ifAllFieldsRequired);
+    }
+
+    public void deleteQuizQuestionAnswer(Integer id) {
+        quizService.deleteQuestionAnswer(id);
     }
 }

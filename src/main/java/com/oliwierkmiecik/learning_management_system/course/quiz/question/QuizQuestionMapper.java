@@ -21,7 +21,7 @@ public abstract class QuizQuestionMapper {
     protected abstract QuizQuestion quizQuestionCreateDTOToQuizQuestion(QuizQuestionCreateDTO createDTO);
 
     @Mapping(source = "answers", target = "answerTexts")
-    protected abstract QuizQuestionReadDTO QuizQuestionToQuizQuestionReadDTO(QuizQuestion entity);
+    public abstract QuizQuestionReadDTO QuizQuestionToQuizQuestionReadDTO(QuizQuestion entity);
 
     protected String mapQuizQuestionAnswerToString(QuizQuestionAnswer quizQuestionAnswer) {
         return quizQuestionAnswer.getAnswerText();
@@ -33,7 +33,7 @@ public abstract class QuizQuestionMapper {
                 .orElseThrow(() -> new NotFoundException("Quiz not found for id: " + quizId));
     }
 
-    protected List<QuizQuestionReadDTO> EntityListToReadDTOList(List<QuizQuestion> entityList) {
+    public List<QuizQuestionReadDTO> EntityListToReadDTOList(List<QuizQuestion> entityList) {
         return entityList.stream()
                 .map(this::QuizQuestionToQuizQuestionReadDTO)
                 .toList();

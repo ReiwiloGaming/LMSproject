@@ -16,7 +16,7 @@ public abstract class QuizQuestionAnswerMapper{
     @Autowired
     protected QuizQuestionRepository quizQuestionRepository;
 
-    protected abstract QuizQuestionAnswerReadDTO QuizQuestionAnswerToQuizQuestionAnswerReadDTO(QuizQuestionAnswer quizQuestionAnswer);
+    public abstract QuizQuestionAnswerReadDTO QuizQuestionAnswerToQuizQuestionAnswerReadDTO(QuizQuestionAnswer quizQuestionAnswer);
 
     @Mapping(source = "quizQuestionId", target = "quizQuestion")
     protected abstract QuizQuestionAnswer QuizQuestionAnswerCreateDTOToQuizQuestionAnswer(QuizQuestionAnswerCreateDTO createDTO);
@@ -27,7 +27,7 @@ public abstract class QuizQuestionAnswerMapper{
                 .orElseThrow(() -> new NotFoundException("Quiz question not found for id: " + quizQuestionId));
     }
 
-    protected List<QuizQuestionAnswerReadDTO> entityListToReadDTOList(List<QuizQuestionAnswer> entityList) {
+    public List<QuizQuestionAnswerReadDTO> entityListToReadDTOList(List<QuizQuestionAnswer> entityList) {
         return entityList.stream().map(this::QuizQuestionAnswerToQuizQuestionAnswerReadDTO).toList();
     }
 }
