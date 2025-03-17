@@ -34,7 +34,9 @@ public class CourseController {
     private final QuizQuestionMapper quizQuestionMapper;
     private final QuizQuestionAnswerMapper quizQuestionAnswerMapper;
 
-    public CourseController(CourseService courseService, CourseMapper courseMapper, LessonMapper lessonMapper, QuizMapper quizMapper, QuizQuestionMapper quizQuestionMapper, QuizQuestionAnswerMapper quizQuestionAnswerMapper) {
+    public CourseController(CourseService courseService, CourseMapper courseMapper, LessonMapper lessonMapper,
+                            QuizMapper quizMapper, QuizQuestionMapper quizQuestionMapper,
+                            QuizQuestionAnswerMapper quizQuestionAnswerMapper) {
         this.courseService = courseService;
         this.courseMapper = courseMapper;
         this.lessonMapper = lessonMapper;
@@ -42,9 +44,8 @@ public class CourseController {
         this.quizQuestionMapper = quizQuestionMapper;
         this.quizQuestionAnswerMapper = quizQuestionAnswerMapper;
     }
-
     //-----------------------------------------------------------------------------------------------------------------
-    //                                          CONTROLLING COURSES
+    //                                               COURSES
 
     @GetMapping("courses")
     public ResponseEntity<List<CourseReadDTO>> getAllCourses() {
@@ -101,27 +102,27 @@ public class CourseController {
     }
 
     //-----------------------------------------------------------------------------------------------------------------
-    //                                          CONTROLLING LESSONS
+    //                                                 LESSONS
 
-    @GetMapping("courses/lessons")
-    public ResponseEntity<List<LessonReadDTO>> getAllLessons() {
-        List<Lesson> allLessons = courseService.findAllLessons();
-        List<LessonReadDTO> lessonReadDTOS = lessonMapper.lessonListToLessonReadDTOList(allLessons);
+    @GetMapping("courses/{courseId}/lessons")
+    public ResponseEntity<List<LessonReadDTO>> getAllCourseLessons(@PathVariable Integer courseId) {
+        List<Lesson> allCourseLessons = courseService.findAllCourseLessons(courseId);
+        List<LessonReadDTO> lessonReadDTOS = lessonMapper.lessonListToLessonReadDTOList(allCourseLessons);
 
         return ResponseEntity.ok(lessonReadDTOS);
     }
 
-    @GetMapping("courses/lessons{id}")
-    public ResponseEntity<LessonReadDTO> getLessonById(@PathVariable Integer id) {
-        Lesson lessonById = courseService.findLessonById(id);
+    @GetMapping("courses/{courseId}/lessons/{lessonId}")
+    public ResponseEntity<LessonReadDTO> getLessonById(@PathVariable Integer courseId, @PathVariable Integer lessonId) {
+        Lesson lessonById = courseService.findLessonById(courseId, lessonId);
         LessonReadDTO lessonReadDTO = lessonMapper.lessonToLessonReadDTO(lessonById);
 
         return ResponseEntity.ok(lessonReadDTO);
     }
 
-    @PostMapping("courses/lessons")
-    public ResponseEntity<LessonReadDTO> createLesson(@RequestBody LessonCreateDTO createDTO) {
-        Lesson newLesson = courseService.saveLesson(createDTO);
+    @PostMapping("courses/{courseId}/lessons")
+    public ResponseEntity<LessonReadDTO> createLesson(@PathVariable Integer courseId, @RequestBody LessonCreateDTO createDTO) {
+        Lesson newLesson = courseService.addLessonToCourse(courseId, createDTO);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -129,53 +130,53 @@ public class CourseController {
                 .toUri();
 
         LessonReadDTO lessonReadDTO = lessonMapper.lessonToLessonReadDTO(newLesson);
+
         return ResponseEntity.created(location).body(lessonReadDTO);
     }
 
-    @PutMapping("courses/lessons/{id}")
-    public ResponseEntity<LessonReadDTO> updateLesson(@PathVariable Integer id, @RequestBody LessonCreateDTO updates) {
-        Lesson updatedLesson = courseService.updateLesson(id, updates, true);
-
+    @PutMapping("courses/{courseId}/lessons/{lessonId}")
+    public ResponseEntity<LessonReadDTO> updateLesson(@PathVariable Integer courseId, @PathVariable Integer lessonId, @RequestBody LessonCreateDTO updates) {
+        Lesson updatedLesson = courseService.updateLessonInCourse(courseId, lessonId, updates, true);
         LessonReadDTO lessonReadDTO = lessonMapper.lessonToLessonReadDTO(updatedLesson);
+
         return ResponseEntity.ok(lessonReadDTO);
     }
 
-    @PatchMapping("courses/lessons/{id}")
-    public ResponseEntity<LessonReadDTO> partiallyUpdateLesson(@PathVariable Integer id, @RequestBody LessonCreateDTO updates) {
-        Lesson updatedLesson = courseService.updateLesson(id, updates, false);
-
+    @PatchMapping("courses/{courseId}/lessons/{lessonId}")
+    public ResponseEntity<LessonReadDTO> partiallyUpdateLesson(@PathVariable Integer courseId, @PathVariable Integer lessonId, @RequestBody LessonCreateDTO updates) {
+        Lesson updatedLesson = courseService.updateLessonInCourse(courseId, lessonId, updates, false);
         LessonReadDTO lessonReadDTO = lessonMapper.lessonToLessonReadDTO(updatedLesson);
+
         return ResponseEntity.ok(lessonReadDTO);
     }
 
-    @DeleteMapping("courses/lessons/{id}")
-    public ResponseEntity<Void> deleteLesson(@PathVariable Integer id) {
-        courseService.deleteLesson(id);
+    @DeleteMapping("courses/{courseId}/lessons/{lessonId}")
+    public ResponseEntity<Void> deleteLesson(@PathVariable Integer courseId, @PathVariable Integer lessonId) {
+        courseService.deleteLesson(courseId, lessonId);
         return ResponseEntity.noContent().build();
     }
-
     //-----------------------------------------------------------------------------------------------------------------
-    //                                            CONTROLLING QUIZES
+    //                                                 QUIZES
 
-    @GetMapping("courses/quizes")
-    public ResponseEntity<List<QuizReadDTO>> getAllQuizes() {
-        List<Quiz> allQuizes = courseService.findAllQuizes();
-        List<QuizReadDTO> quizReadDTOS = quizMapper.quizListToQuizReadDTOList(allQuizes);
+    @GetMapping("courses/{courseId}/quizes")
+    public ResponseEntity<List<QuizReadDTO>> getAllCourseQuizes(@PathVariable Integer courseId) {
+        List<Quiz> allCourseQuizes = courseService.findAllCourseQuizes(courseId);
+        List<QuizReadDTO> quizReadDTOS = quizMapper.quizListToQuizReadDTOList(allCourseQuizes);
 
         return ResponseEntity.ok(quizReadDTOS);
     }
 
-    @GetMapping("courses/quizes/{id}")
-    public ResponseEntity<QuizReadDTO> getQuizById(@PathVariable Integer id) {
-        Quiz quizById = courseService.findQuizById(id);
+    @GetMapping("courses/{courseId}/quizes/{quizId}")
+    public ResponseEntity<QuizReadDTO> getQuizById(@PathVariable Integer courseId, @PathVariable Integer quizId) {
+        Quiz quizById = courseService.findQuizById(courseId, quizId);
         QuizReadDTO quizReadDTO = quizMapper.quizToQuizReadDTO(quizById);
 
         return ResponseEntity.ok(quizReadDTO);
     }
 
-    @PostMapping("courses/quizes")
-    public ResponseEntity<QuizReadDTO> createQuiz(@RequestBody QuizCreateDTO createDTO) {
-        Quiz newQuiz = courseService.saveQuiz(createDTO);
+    @PostMapping("courses/{courseId}/quizes")
+    public ResponseEntity<QuizReadDTO> createQuiz(@PathVariable Integer courseId, @RequestBody QuizCreateDTO createDTO) {
+        Quiz newQuiz = courseService.addQuizToCourse(courseId, createDTO);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -187,124 +188,133 @@ public class CourseController {
         return ResponseEntity.created(location).body(quizReadDTO);
     }
 
-    @PutMapping("courses/quizes/{id}")
-    public ResponseEntity<QuizReadDTO> updateQuiz(@PathVariable Integer id, @RequestBody QuizCreateDTO updates) {
-        Quiz updatedQuiz = courseService.updateQuiz(id, updates, true);
-        QuizReadDTO quizReadDTO = quizMapper.quizToQuizReadDTO(updatedQuiz);
+    @PutMapping("courses/{courseId}/quizes/{quizId}")
+    public ResponseEntity<QuizReadDTO> updateQuiz(@PathVariable Integer courseId, @PathVariable Integer quizId, @RequestBody QuizCreateDTO updates) {
+        Quiz quiz = courseService.updateQuizInCourse(courseId, quizId, updates, true);
+        QuizReadDTO quizReadDTO = quizMapper.quizToQuizReadDTO(quiz);
 
         return ResponseEntity.ok(quizReadDTO);
     }
 
-    @PatchMapping("courses/quizes/{id}")
-    public ResponseEntity<QuizReadDTO> partiallyUpdateQuiz(@PathVariable Integer id, @RequestBody QuizCreateDTO updates) {
-        Quiz updatedQuiz = courseService.updateQuiz(id, updates, false);
-        QuizReadDTO quizReadDTO = quizMapper.quizToQuizReadDTO(updatedQuiz);
+    @PatchMapping("courses/{courseId}/quizes/{quizId}")
+    public ResponseEntity<QuizReadDTO> partiallyUpdateQuiz(@PathVariable Integer courseId, @PathVariable Integer quizId, @RequestBody QuizCreateDTO updates) {
+        Quiz quiz = courseService.updateQuizInCourse(courseId, quizId, updates, false);
+        QuizReadDTO quizReadDTO = quizMapper.quizToQuizReadDTO(quiz);
 
         return ResponseEntity.ok(quizReadDTO);
     }
 
-    @DeleteMapping("courses/quizes/{id}")
-    public ResponseEntity<Void> deleteQuiz(@PathVariable Integer id) {
-        courseService.deleteQuiz(id);
+    @DeleteMapping("courses/{courseId}/quizes/{quizId}")
+    public ResponseEntity<Void> deleteQuiz(@PathVariable Integer courseId, @PathVariable Integer quizId) {
+        courseService.deleteQuiz(courseId, quizId);
         return ResponseEntity.noContent().build();
     }
-
     //-----------------------------------------------------------------------------------------------------------------
-    //                                        CONTROLLING QUIZ QUESTIONS
+    //                                              QUIZ QUESTIONS
 
-    @GetMapping("courses/quizes/questions")
-    public ResponseEntity<List<QuizQuestionReadDTO>> getAllQuestions() {
-        List<QuizQuestion> quizQuestions = courseService.findAllQuizQuestions();
-        List<QuizQuestionReadDTO> quizQuestionReadDTOS = quizQuestionMapper.EntityListToReadDTOList(quizQuestions);
+    @GetMapping("courses/{courseId}/quizes/{quizId}/questions")
+    public ResponseEntity<List<QuizQuestionReadDTO>> getAllQuizQuestions(@PathVariable Integer courseId, @PathVariable Integer quizId) {
+        List<QuizQuestion> allQuizQuestions = courseService.findAllQuizQuestions(courseId, quizId);
+        List<QuizQuestionReadDTO> quizQuestionReadDTOS = quizQuestionMapper.quizQuestionListToQuizQuestionReadDTOList(allQuizQuestions);
+
         return ResponseEntity.ok(quizQuestionReadDTOS);
     }
 
-    @GetMapping("courses/quizes/questions/{id}")
-    public ResponseEntity<QuizQuestionReadDTO> getQuestionById(@PathVariable Integer id) {
-        QuizQuestion questionById = courseService.findQuizQuestionById(id);
-        QuizQuestionReadDTO quizQuestionReadDTO = quizQuestionMapper.QuizQuestionToQuizQuestionReadDTO(questionById);
+    @GetMapping("courses/{courseId}/quizes/{quizId}/questions/{questionId}")
+    public ResponseEntity<QuizQuestionReadDTO> getQuizQuestionById(@PathVariable Integer courseId, @PathVariable Integer quizId, @PathVariable Integer questionId) {
+        QuizQuestion quizQuestion = courseService.findQuizQuestionById(courseId, quizId, questionId);
+        QuizQuestionReadDTO quizQuestionReadDTO = quizQuestionMapper.quizQuestionToQuizQuestionReadDTO(quizQuestion);
+
         return ResponseEntity.ok(quizQuestionReadDTO);
     }
 
-    @PostMapping("courses/quizes/questions")
-    public ResponseEntity<QuizQuestionReadDTO> createQuestion(@RequestBody QuizQuestionCreateDTO createDTO) {
-        QuizQuestion newQuestion = courseService.saveQuizQuestion(createDTO);
+    @PostMapping("courses/{courseId}/quizes/{quizId}/questions")
+    public ResponseEntity<QuizQuestionReadDTO> createQuizQuestion(@PathVariable Integer courseId, @PathVariable Integer quizId, @RequestBody QuizQuestionCreateDTO createDTO) {
+        QuizQuestion newQuestion = courseService.addQuestionToQuiz(courseId, quizId, createDTO);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(newQuestion.getId())
                 .toUri();
 
-        QuizQuestionReadDTO newQuestionReadDTO = quizQuestionMapper.QuizQuestionToQuizQuestionReadDTO(newQuestion);
+        QuizQuestionReadDTO quizQuestionReadDTO = quizQuestionMapper.quizQuestionToQuizQuestionReadDTO(newQuestion);
 
-        return ResponseEntity.created(location).body(newQuestionReadDTO);
+        return ResponseEntity.created(location).body(quizQuestionReadDTO);
     }
 
-    @PutMapping("courses/quizes/questions/{id}")
-    public ResponseEntity<QuizQuestionReadDTO> updateQuestion(@PathVariable Integer id, @RequestBody QuizQuestionCreateDTO updates) {
-        QuizQuestion updatedQuestion = courseService.updateQuizQuestion(id, updates, true);
-        QuizQuestionReadDTO updatedQuestionReadDTO = quizQuestionMapper.QuizQuestionToQuizQuestionReadDTO(updatedQuestion);
+    @PutMapping("courses/{courseId}/quizes/{quizId}/questions/{questionId}")
+    public ResponseEntity<QuizQuestionReadDTO> updateQuizQuestion(@PathVariable Integer courseId, @PathVariable Integer quizId, @PathVariable Integer questionId, @RequestBody QuizQuestionCreateDTO updates) {
+        QuizQuestion updatedQuestion = courseService.updateQuestionInQuiz(courseId, quizId, questionId, updates, true);
+        QuizQuestionReadDTO quizQuestionReadDTO = quizQuestionMapper.quizQuestionToQuizQuestionReadDTO(updatedQuestion);
 
-        return ResponseEntity.ok(updatedQuestionReadDTO);
+        return ResponseEntity.ok(quizQuestionReadDTO);
     }
 
-    @PatchMapping("courses/quizes/questions/{id}")
-    public ResponseEntity<QuizQuestionReadDTO> partiallyUpdateQuestion(@PathVariable Integer id, @RequestBody QuizQuestionCreateDTO updates) {
-        QuizQuestion updatedQuestion = courseService.updateQuizQuestion(id, updates, false);
-        QuizQuestionReadDTO updatedQuestionReadDTO = quizQuestionMapper.QuizQuestionToQuizQuestionReadDTO(updatedQuestion);
+    @PatchMapping("courses/{courseId}/quizes/{quizId}/questions/{questionId}")
+    public ResponseEntity<QuizQuestionReadDTO> partiallyUpdateQuizQuestion(@PathVariable Integer courseId, @PathVariable Integer quizId, @PathVariable Integer questionId, @RequestBody QuizQuestionCreateDTO updates) {
+        QuizQuestion updatedQuestion = courseService.updateQuestionInQuiz(courseId, quizId, questionId, updates, false);
+        QuizQuestionReadDTO quizQuestionReadDTO = quizQuestionMapper.quizQuestionToQuizQuestionReadDTO(updatedQuestion);
 
-        return ResponseEntity.ok(updatedQuestionReadDTO);
+        return ResponseEntity.ok(quizQuestionReadDTO);
     }
 
-    @DeleteMapping("courses/quizes/questions/{id}")
-    public ResponseEntity<Void> deleteQuestion(@PathVariable Integer id) {
-        courseService.deleteQuizQuestion(id);
+    @DeleteMapping("courses/{courseId}/quizes/{quizId}/questions/{questionId}")
+    public ResponseEntity<Void> deleteQuizQuestion(@PathVariable Integer courseId, @PathVariable Integer quizId, @PathVariable Integer questionId) {
+        courseService.deleteQuizQuestion(courseId, quizId, questionId);
         return ResponseEntity.noContent().build();
     }
     //-----------------------------------------------------------------------------------------------------------------
-    //                                      CONTROLLING QUIZ QUESTION ANSWERS
+    //                                           QUIZ QUESTION ANSWERS
 
-    @GetMapping("quizquestionanswers")
-    public ResponseEntity<List<QuizQuestionAnswerReadDTO>> getAllAnswers() {
-        return ResponseEntity.ok(quizQuestionAnswerMapper.entityListToReadDTOList(courseService.findAllQuizQuestionAnswers()));
+    @GetMapping("courses/{courseId}/quizes/{quizId}/questions/{questionId}/answers")
+    public ResponseEntity<List<QuizQuestionAnswerReadDTO>> getAllQuestionAnswers(@PathVariable Integer courseId, @PathVariable Integer quizId, @PathVariable Integer questionId) {
+        List<QuizQuestionAnswer> allQuizQuestionAnswers = courseService.findAllQuizQuestionAnswers(courseId, quizId, questionId);
+        List<QuizQuestionAnswerReadDTO> quizQuestionAnswerReadDTOS = quizQuestionAnswerMapper.entityListToReadDTOList(allQuizQuestionAnswers);
+
+        return ResponseEntity.ok(quizQuestionAnswerReadDTOS);
     }
 
-    @GetMapping("quizquestionanswers/{id}")
-    public ResponseEntity<QuizQuestionAnswerReadDTO> getAnswerById(@PathVariable Integer id) {
-        return ResponseEntity.ok(quizQuestionAnswerMapper.QuizQuestionAnswerToQuizQuestionAnswerReadDTO(courseService.findQuizQuestionAnswerById(id)));
+    @GetMapping("courses/{courseId}/quizes/{quizId}/questions/{questionId}/answers/{answerId}")
+    public ResponseEntity<QuizQuestionAnswerReadDTO> getQuestionAnswerById(@PathVariable Integer courseId, @PathVariable Integer quizId, @PathVariable Integer questionId, @PathVariable Integer answerId) {
+        QuizQuestionAnswer quizQuestionAnswerById = courseService.findQuizQuestionAnswerById(courseId, quizId, questionId, answerId);
+        QuizQuestionAnswerReadDTO answerReadDTO = quizQuestionAnswerMapper.QuizQuestionAnswerToQuizQuestionAnswerReadDTO(quizQuestionAnswerById);
+
+        return ResponseEntity.ok(answerReadDTO);
     }
 
-    @PostMapping("quizquestionanswers")
-    public ResponseEntity<QuizQuestionAnswerReadDTO> createAnswer(@RequestBody QuizQuestionAnswerCreateDTO createDTO) {
-        QuizQuestionAnswer newAnswer = courseService.saveQuizQuestionAnswer(createDTO);
+    @PostMapping("courses/{courseId}/quizes/{quizId}/questions/{questionId}/answers")
+    public ResponseEntity<QuizQuestionAnswerReadDTO> createQuestionAnswer(@PathVariable Integer courseId, @PathVariable Integer quizId, @PathVariable Integer questionId, @RequestBody QuizQuestionAnswerCreateDTO createDTO) {
+        QuizQuestionAnswer newQuizQuestionAnswer = courseService.addAnswerToQuestion(courseId, quizId, questionId, createDTO);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(newAnswer.getId())
+                .buildAndExpand(newQuizQuestionAnswer.getId())
                 .toUri();
 
-        QuizQuestionAnswerReadDTO answerReadDTO = quizQuestionAnswerMapper.QuizQuestionAnswerToQuizQuestionAnswerReadDTO(newAnswer);
+        QuizQuestionAnswerReadDTO answerReadDTO = quizQuestionAnswerMapper.QuizQuestionAnswerToQuizQuestionAnswerReadDTO(newQuizQuestionAnswer);
 
         return ResponseEntity.created(location).body(answerReadDTO);
     }
 
-    @PutMapping("quizquestionanswers/{id}")
-    public ResponseEntity<QuizQuestionAnswerReadDTO> updateAnswer(@PathVariable Integer id, @RequestBody QuizQuestionAnswerCreateDTO updates) {
-        QuizQuestionAnswer updatedAnswer = courseService.updateQuizQuestionAnswer(id, updates, true);
-        QuizQuestionAnswerReadDTO answerReadDTO = quizQuestionAnswerMapper.QuizQuestionAnswerToQuizQuestionAnswerReadDTO(updatedAnswer);
+    @PutMapping("courses/{courseId}/quizes/{quizId}/questions/{questionId}/answers/{answerId}")
+    public ResponseEntity<QuizQuestionAnswerReadDTO> updateQuestionAnswer(@PathVariable Integer courseId, @PathVariable Integer quizId, @PathVariable Integer questionId, @PathVariable Integer answerId, @RequestBody QuizQuestionAnswerCreateDTO updates) {
+        QuizQuestionAnswer updatedQuestionAnswer = courseService.updateQuestionAnswer(courseId, quizId, questionId, answerId, updates, true);
+        QuizQuestionAnswerReadDTO answerReadDTO = quizQuestionAnswerMapper.QuizQuestionAnswerToQuizQuestionAnswerReadDTO(updatedQuestionAnswer);
+
         return ResponseEntity.ok(answerReadDTO);
     }
 
-    @PatchMapping("quizquestionanswers/{id}")
-    public ResponseEntity<QuizQuestionAnswerReadDTO> partiallyUpdateAnswer(@PathVariable Integer id, @RequestBody QuizQuestionAnswerCreateDTO updates) {
-        QuizQuestionAnswer updatedAnswer = courseService.updateQuizQuestionAnswer(id, updates, false);
-        QuizQuestionAnswerReadDTO answerReadDTO = quizQuestionAnswerMapper.QuizQuestionAnswerToQuizQuestionAnswerReadDTO(updatedAnswer);
+    @PatchMapping("courses/{courseId}/quizes/{quizId}/questions/{questionId}/answers/{answerId}")
+    public ResponseEntity<QuizQuestionAnswerReadDTO> partiallyUpdateQuestionAnswer(@PathVariable Integer courseId, @PathVariable Integer quizId, @PathVariable Integer questionId, @PathVariable Integer answerId, @RequestBody QuizQuestionAnswerCreateDTO updates) {
+        QuizQuestionAnswer updatedQuestionAnswer = courseService.updateQuestionAnswer(courseId, quizId, questionId, answerId, updates, false);
+        QuizQuestionAnswerReadDTO answerReadDTO = quizQuestionAnswerMapper.QuizQuestionAnswerToQuizQuestionAnswerReadDTO(updatedQuestionAnswer);
+
         return ResponseEntity.ok(answerReadDTO);
     }
 
-    @DeleteMapping("quizquestionanswers/{id}")
-    public ResponseEntity<Void> deleteAnswer(@PathVariable Integer id) {
-        courseService.deleteQuizQuestionAnswer(id);
+    @DeleteMapping("courses/{courseId}/quizes/{quizId}/questions/{questionId}/answers/{answerId}")
+    public ResponseEntity<Void> deleteQuestionAnswer(@PathVariable Integer courseId, @PathVariable Integer quizId, @PathVariable Integer questionId, @PathVariable Integer answerId) {
+        courseService.deleteQuizQuestionAnswer(courseId, quizId, questionId, answerId);
         return ResponseEntity.noContent().build();
     }
 }

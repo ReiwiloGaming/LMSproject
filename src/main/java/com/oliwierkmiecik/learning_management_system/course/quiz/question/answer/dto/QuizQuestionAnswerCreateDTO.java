@@ -1,5 +1,6 @@
 package com.oliwierkmiecik.learning_management_system.course.quiz.question.answer.dto;
 
+import com.oliwierkmiecik.learning_management_system.exceptions.NullsForbiddenException;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,10 +8,14 @@ import lombok.Setter;
 @Setter
 public class QuizQuestionAnswerCreateDTO {
     private String answerText;
-    private Integer quizQuestionId;
 
-    public QuizQuestionAnswerCreateDTO(String answerText, Integer quizQuestionId) {
+    public QuizQuestionAnswerCreateDTO(String answerText) {
         this.answerText = answerText;
-        this.quizQuestionId = quizQuestionId;
+    }
+
+    public void checkIfAllFieldsPresent() {
+        if (this.answerText == null) {
+            throw new NullsForbiddenException("Nulls are forbidden");
+        }
     }
 }

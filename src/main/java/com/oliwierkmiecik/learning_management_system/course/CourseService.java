@@ -2,17 +2,18 @@ package com.oliwierkmiecik.learning_management_system.course;
 
 import com.oliwierkmiecik.learning_management_system.course.dto.CourseCreateDTO;
 import com.oliwierkmiecik.learning_management_system.course.lesson.Lesson;
-import com.oliwierkmiecik.learning_management_system.course.lesson.LessonService;
+import com.oliwierkmiecik.learning_management_system.course.lesson.LessonMapper;
 import com.oliwierkmiecik.learning_management_system.course.lesson.dto.LessonCreateDTO;
 import com.oliwierkmiecik.learning_management_system.course.quiz.Quiz;
-import com.oliwierkmiecik.learning_management_system.course.quiz.QuizService;
+import com.oliwierkmiecik.learning_management_system.course.quiz.QuizMapper;
 import com.oliwierkmiecik.learning_management_system.course.quiz.dto.QuizCreateDTO;
 import com.oliwierkmiecik.learning_management_system.course.quiz.question.QuizQuestion;
+import com.oliwierkmiecik.learning_management_system.course.quiz.question.QuizQuestionMapper;
 import com.oliwierkmiecik.learning_management_system.course.quiz.question.answer.QuizQuestionAnswer;
+import com.oliwierkmiecik.learning_management_system.course.quiz.question.answer.QuizQuestionAnswerMapper;
 import com.oliwierkmiecik.learning_management_system.course.quiz.question.answer.dto.QuizQuestionAnswerCreateDTO;
 import com.oliwierkmiecik.learning_management_system.course.quiz.question.dto.QuizQuestionCreateDTO;
 import com.oliwierkmiecik.learning_management_system.exceptions.NotFoundException;
-import com.oliwierkmiecik.learning_management_system.exceptions.NullsForbiddenException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,39 +22,140 @@ import java.util.List;
 public class CourseService {
     private final CourseRepository courseRepository;
     private final CourseMapper courseMapper;
-    private final LessonService lessonService;
-    private final QuizService quizService;
+    private final LessonMapper lessonMapper;
+    private final QuizMapper quizMapper;
+    private final QuizQuestionMapper quizQuestionMapper;
+    private final QuizQuestionAnswerMapper quizQuestionAnswerMapper;
 
-    public CourseService(CourseRepository courseRepository, CourseMapper courseMapper, LessonService lessonService, QuizService quizService) {
+    public CourseService(CourseRepository courseRepository, CourseMapper courseMapper, LessonMapper lessonMapper, QuizMapper quizMapper, QuizQuestionMapper quizQuestionMapper, QuizQuestionAnswerMapper quizQuestionAnswerMapper) {
         this.courseRepository = courseRepository;
         this.courseMapper = courseMapper;
-        this.lessonService = lessonService;
-        this.quizService = quizService;
+        this.lessonMapper = lessonMapper;
+        this.quizMapper = quizMapper;
+        this.quizQuestionMapper = quizQuestionMapper;
+        this.quizQuestionAnswerMapper = quizQuestionAnswerMapper;
     }
-    //-----------------------------------------------------------------------------------------------------------------
-    //                                                 COURSES
 
     public List<Course> findAllCourses() {
         return courseRepository.findAll();
     }
 
-    public Course findCourseById(Integer id) {
-        return courseRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Course not found for id: " + id));
+    public Course findCourseById(Integer courseId) {
+        return courseRepository.findById(courseId)
+                .orElseThrow(() -> new NotFoundException("Course not found for id: " + courseId));
+    }
+
+    public List<Lesson> findAllCourseLessons(Integer courseId) {
+        return findCourseById(courseId).getLessons();
+    }
+
+    public Lesson findLessonById(Integer courseId, Integer lessonId) {
+        List<Lesson> allCourseLessons = findAllCourseLessons(courseId);
+        return allCourseLessons.stream()
+                .filter(lesson -> lesson.getId().equals(lessonId))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Lesson not found for id " + lessonId + " in course with id " + courseId));
+    }
+
+    public List<Quiz> findAllCourseQuizes(Integer courseId) {
+        return findCourseById(courseId).getQuizes();
+    }
+
+    public Quiz findQuizById(Integer courseId, Integer quizId) {
+        List<Quiz> allCourseQuizes = findAllCourseQuizes(courseId);
+        return allCourseQuizes.stream()
+                .filter(quiz -> quiz.getId().equals(quizId))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Quiz not found for id " + quizId + " in course with id " + courseId));
+    }
+
+    public List<QuizQuestion> findAllQuizQuestions(Integer courseId, Integer quizId) {
+        Quiz quiz = findQuizById(courseId, quizId);
+        return quiz.getQuestions();
+    }
+
+    public QuizQuestion findQuizQuestionById(Integer courseId, Integer quizId, Integer questionId) {
+        List<QuizQuestion> allQuizQuestions = findAllQuizQuestions(courseId, quizId);
+        return allQuizQuestions.stream()
+                .filter(quizQuestion -> quizQuestion.getId().equals(questionId))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Question not found for id " + questionId + " in quiz with id " + quizId));
+    }
+
+    public List<QuizQuestionAnswer> findAllQuizQuestionAnswers(Integer courseId, Integer quizId, Integer questionId) {
+        QuizQuestion quizQuestion = findQuizQuestionById(courseId, quizId, questionId);
+        return quizQuestion.getAnswers();
+    }
+
+    public QuizQuestionAnswer findQuizQuestionAnswerById(Integer courseId, Integer quizId, Integer questionId, Integer answerId) {
+        List<QuizQuestionAnswer> allQuizQuestionAnswers = findAllQuizQuestionAnswers(courseId, quizId, questionId);
+        return allQuizQuestionAnswers.stream()
+                .filter(quizQuestionAnswer -> quizQuestionAnswer.getId().equals(answerId))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Answer not found for id " + answerId + " in question with id " + questionId));
     }
 
     public Course saveCourse(CourseCreateDTO createDTO) {
-        checkIfAllFieldsPresent(createDTO);
+        createDTO.checkIfAllFieldsPresent();
         Course newCourse = courseMapper.courseCreateDTOToCourse(createDTO);
 
         return courseRepository.save(newCourse);
     }
 
-    public Course updateCourse(Integer id, CourseCreateDTO updates, boolean ifAllFieldsRequired) {
-        Course updatedCourse = findCourseById(id);
+    public Lesson addLessonToCourse(Integer courseId, LessonCreateDTO lessonCreateDTO) {
+        lessonCreateDTO.checkIfAllFieldsPresent();
+
+        Course course = findCourseById(courseId);
+        Lesson newLesson = lessonMapper.lessonCreateDTOToLesson(lessonCreateDTO);
+
+        course.addLesson(newLesson);
+        Course savedCourse = courseRepository.save(course);
+
+        return savedCourse.getLessons().getLast();
+    }
+
+    public Quiz addQuizToCourse(Integer courseId, QuizCreateDTO quizCreateDTO) {
+        quizCreateDTO.checkIfAllFieldsPresent();
+
+        Course course = findCourseById(courseId);
+        Quiz newQuiz = quizMapper.quizCreateDTOToQuiz(quizCreateDTO);
+
+        course.addQuiz(newQuiz);
+        Course savedCourse = courseRepository.save(course);
+
+        return savedCourse.getQuizes().getLast();
+    }
+
+    public QuizQuestion addQuestionToQuiz(Integer courseId, Integer quizId, QuizQuestionCreateDTO quizQuestionCreateDTO) {
+        quizQuestionCreateDTO.checkIfAllFieldsPresent();
+
+        Course course = findCourseById(courseId);
+        Quiz quiz = findQuizById(courseId, quizId);
+        QuizQuestion newQuizQuestion = quizQuestionMapper.quizQuestionCreateDTOToQuizQuestion(quizQuestionCreateDTO);
+
+        quiz.addQuestion(newQuizQuestion);
+
+        Course savedCourse = courseRepository.save(course);
+        return findAllQuizQuestions(courseId, quizId).getLast();
+    }
+
+    public QuizQuestionAnswer addAnswerToQuestion(Integer courseId, Integer quizId, Integer questionId, QuizQuestionAnswerCreateDTO quizQuestionAnswerCreateDTO) {
+        quizQuestionAnswerCreateDTO.checkIfAllFieldsPresent();
+
+        Course course = findCourseById(courseId);
+        QuizQuestion question = findQuizQuestionById(courseId, quizId, questionId);
+        QuizQuestionAnswer newAnswer = quizQuestionAnswerMapper.QuizQuestionAnswerCreateDTOToQuizQuestionAnswer(quizQuestionAnswerCreateDTO);
+
+        question.addAnswer(newAnswer);
+        Course savedCourse = courseRepository.save(course);
+        return findAllQuizQuestionAnswers(courseId, quizId, questionId).getLast();
+    }
+
+    public Course updateCourse(Integer courseId, CourseCreateDTO updates, boolean ifAllFieldsRequired) {
+        Course updatedCourse = findCourseById(courseId);
         Course updatesAsEntity = courseMapper.courseCreateDTOToCourse(updates);
 
-        if (ifAllFieldsRequired) checkIfAllFieldsPresent(updates);
+        if (ifAllFieldsRequired) updates.checkIfAllFieldsPresent();
 
         if (updatesAsEntity.getName() != null) updatedCourse.setName(updatesAsEntity.getName());
         if (updatesAsEntity.getDescription() != null) updatedCourse.setDescription(updatesAsEntity.getDescription());
@@ -61,103 +163,85 @@ public class CourseService {
         return courseRepository.save(updatedCourse);
     }
 
-    public void deleteCourse(Integer id) {
-        courseRepository.delete(findCourseById(id));
+    public Lesson updateLessonInCourse(Integer courseId, Integer lessonId, LessonCreateDTO updates, boolean ifAllFieldsRequired) {
+        if (ifAllFieldsRequired) updates.checkIfAllFieldsPresent();
+
+        Course course = findCourseById(courseId);
+        Lesson updatedLesson = findLessonById(courseId, lessonId);
+
+        if (updates.getName() != null) updatedLesson.setName(updates.getName());
+        if (updates.getContent() != null) updatedLesson.setContent(updates.getContent());
+        if (updates.getInCoursePosition() != null) updatedLesson.setInCoursePosition(updates.getInCoursePosition());
+
+        courseRepository.save(course);
+        return updatedLesson;
     }
 
+    public Quiz updateQuizInCourse(Integer courseId, Integer quizId, QuizCreateDTO updates, boolean ifAllFieldsRequired) {
+        if (ifAllFieldsRequired) updates.checkIfAllFieldsPresent();
 
-    private void checkIfAllFieldsPresent(CourseCreateDTO createDTO) {
-        if (createDTO.getName() == null || createDTO.getDescription() == null) {
-            throw new NullsForbiddenException("Nulls are forbidden.");
-        }
-    }
-    //-----------------------------------------------------------------------------------------------------------------
-    //                                                  LESSONS
+        Course course = findCourseById(courseId);
+        Quiz updatedQuiz = findQuizById(courseId, quizId);
 
-    public List<Lesson> findAllLessons() {
-        return lessonService.findAllLessons();
-    }
+        if (updates.getName() != null) updatedQuiz.setName(updates.getName());
+        if (updates.getInCoursePosition() != null) updatedQuiz.setInCoursePosition(updates.getInCoursePosition());
 
-    public Lesson findLessonById(Integer lessonId) {
-        return lessonService.findLessonById(lessonId);
+        courseRepository.save(course);
+        return updatedQuiz;
     }
 
-    public Lesson saveLesson(LessonCreateDTO createDTO) {
-        return lessonService.saveLesson(createDTO);
+    public QuizQuestion updateQuestionInQuiz(Integer courseId, Integer quizId, Integer questionId, QuizQuestionCreateDTO updates, boolean ifAllFieldsRequired) {
+        if (ifAllFieldsRequired) updates.checkIfAllFieldsPresent();
+
+        Course course = findCourseById(courseId);
+        QuizQuestion updatedQuestion = findQuizQuestionById(courseId, quizId, questionId);
+
+        if (updates.getQuestionText() != null) updatedQuestion.setQuestionText(updates.getQuestionText());
+        if (updates.getCorrectAnswer() != null) updatedQuestion.setCorrectAnswer(updates.getCorrectAnswer());
+
+        courseRepository.save(course);
+        return updatedQuestion;
     }
 
-    public Lesson updateLesson(Integer id, LessonCreateDTO updates, boolean ifAllFieldsRequired) {
-        return lessonService.updateLesson(id, updates, ifAllFieldsRequired);
+    public QuizQuestionAnswer updateQuestionAnswer(Integer courseId, Integer quizId, Integer questionId, Integer answerId, QuizQuestionAnswerCreateDTO updates, boolean ifAllFieldsRequired) {
+        if (ifAllFieldsRequired) updates.checkIfAllFieldsPresent();
+
+        Course course = findCourseById(courseId);
+        QuizQuestionAnswer updatedAnswer = findQuizQuestionAnswerById(courseId, quizId, questionId, answerId);
+
+        if (updates.getAnswerText() != null) updatedAnswer.setAnswerText(updates.getAnswerText());
+
+        courseRepository.save(course);
+        return updatedAnswer;
     }
 
-    public void deleteLesson(Integer id) {
-        lessonService.deleteLesson(id);
-    }
-    //-----------------------------------------------------------------------------------------------------------------
-    //                                                  QUIZES
-
-    public List<Quiz> findAllQuizes() {
-        return quizService.findAllQuizes();
+    public void deleteCourse(Integer courseId) {
+        courseRepository.delete(findCourseById(courseId));
     }
 
-    public Quiz findQuizById(Integer quizId) {
-        return quizService.findQuizById(quizId);
+    public void deleteLesson(Integer courseId, Integer lessonId) {
+        Course course = findCourseById(courseId);
+        course.removeLesson(findLessonById(courseId, lessonId));
+        courseRepository.save(course);
     }
 
-    public Quiz saveQuiz(QuizCreateDTO createDTO) {
-        return quizService.saveQuiz(createDTO);
+    public void deleteQuiz(Integer courseId, Integer quizId) {
+        Course course = findCourseById(courseId);
+        course.removeQuiz(findQuizById(courseId, quizId));
+        courseRepository.save(course);
     }
 
-    public Quiz updateQuiz(Integer id, QuizCreateDTO updates, boolean ifAllFieldsRequired) {
-        return quizService.updateQuiz(id, updates, ifAllFieldsRequired);
+    public void deleteQuizQuestion(Integer courseId, Integer quizId, Integer questionId) {
+        Course course = findCourseById(courseId);
+        Quiz quiz = findQuizById(courseId, quizId);
+        quiz.removeQuestion(findQuizQuestionById(courseId, quizId, questionId));
+        courseRepository.save(course);
     }
 
-    public void deleteQuiz(Integer id) {
-        quizService.deleteQuiz(id);
-    }
-    //-----------------------------------------------------------------------------------------------------------------
-    //                                               QUIZ QUESTIONS
-
-    public List<QuizQuestion> findAllQuizQuestions() {
-        return quizService.findAllQuestions();
-    }
-
-    public QuizQuestion findQuizQuestionById(Integer id) {
-        return quizService.findQuestionById(id);
-    }
-
-    public QuizQuestion saveQuizQuestion(QuizQuestionCreateDTO createDTO) {
-        return quizService.saveQuestion(createDTO);
-    }
-
-    public QuizQuestion updateQuizQuestion(Integer id, QuizQuestionCreateDTO updates, boolean ifAllFieldsRequired) {
-        return quizService.updateQuestion(id, updates, ifAllFieldsRequired);
-    }
-
-    public void deleteQuizQuestion(Integer id) {
-        quizService.deleteQuestion(id);
-    }
-
-    //-----------------------------------------------------------------------------------------------------------------
-    //                                               QUIZ QUESTION ANSWERS
-
-    public List<QuizQuestionAnswer> findAllQuizQuestionAnswers() {
-        return quizService.findAllQuestionAnswers();
-    }
-
-    public QuizQuestionAnswer findQuizQuestionAnswerById(Integer id) {
-        return quizService.findQuestionAnswerById(id);
-    }
-
-    public QuizQuestionAnswer saveQuizQuestionAnswer(QuizQuestionAnswerCreateDTO createDTO) {
-        return quizService.saveQuestionAnswer(createDTO);
-    }
-
-    public QuizQuestionAnswer updateQuizQuestionAnswer(Integer id, QuizQuestionAnswerCreateDTO updates, boolean ifAllFieldsRequired) {
-        return quizService.updateQuestionAnswer(id, updates, ifAllFieldsRequired);
-    }
-
-    public void deleteQuizQuestionAnswer(Integer id) {
-        quizService.deleteQuestionAnswer(id);
+    public void deleteQuizQuestionAnswer(Integer courseId, Integer quizId, Integer questionId, Integer answerId) {
+        Course course = findCourseById(courseId);
+        QuizQuestion quizQuestion = findQuizQuestionById(courseId, quizId, questionId);
+        quizQuestion.removeAnswer(findQuizQuestionAnswerById(courseId, quizId, questionId, answerId));
+        courseRepository.save(course);
     }
 }
