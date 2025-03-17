@@ -14,6 +14,8 @@ import com.oliwierkmiecik.learning_management_system.course.quiz.question.answer
 import com.oliwierkmiecik.learning_management_system.course.quiz.question.answer.dto.QuizQuestionAnswerCreateDTO;
 import com.oliwierkmiecik.learning_management_system.course.quiz.question.dto.QuizQuestionCreateDTO;
 import com.oliwierkmiecik.learning_management_system.exceptions.NotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,6 +29,8 @@ public class CourseService {
     private final QuizQuestionMapper quizQuestionMapper;
     private final QuizQuestionAnswerMapper quizQuestionAnswerMapper;
 
+    private final static Logger LOGGER = LoggerFactory.getLogger(CourseService.class);
+
     public CourseService(CourseRepository courseRepository, CourseMapper courseMapper, LessonMapper lessonMapper, QuizMapper quizMapper, QuizQuestionMapper quizQuestionMapper, QuizQuestionAnswerMapper quizQuestionAnswerMapper) {
         this.courseRepository = courseRepository;
         this.courseMapper = courseMapper;
@@ -37,6 +41,7 @@ public class CourseService {
     }
 
     public List<Course> findAllCourses() {
+        LOGGER.info("Downloaded all courses");
         return courseRepository.findAll();
     }
 
@@ -135,7 +140,7 @@ public class CourseService {
 
         quiz.addQuestion(newQuizQuestion);
 
-        Course savedCourse = courseRepository.save(course);
+        courseRepository.save(course);
         return findAllQuizQuestions(courseId, quizId).getLast();
     }
 
@@ -147,7 +152,7 @@ public class CourseService {
         QuizQuestionAnswer newAnswer = quizQuestionAnswerMapper.QuizQuestionAnswerCreateDTOToQuizQuestionAnswer(quizQuestionAnswerCreateDTO);
 
         question.addAnswer(newAnswer);
-        Course savedCourse = courseRepository.save(course);
+        courseRepository.save(course);
         return findAllQuizQuestionAnswers(courseId, quizId, questionId).getLast();
     }
 
